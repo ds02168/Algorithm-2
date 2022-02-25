@@ -1,0 +1,60 @@
+#include <stdio.h>
+#define MAX_SIZE 10
+
+int queue[MAX_SIZE], rear = 0, front = 0;
+
+void addQ(int);
+int deleteQ();
+void print_queue();
+
+void main(void)
+{
+	int menu;
+	while (1)
+	{
+		printf("addQ(>0), deleteQ(0), exit(-1):");
+		scanf("%d", &menu);
+		if (menu > 0) {
+			addQ(menu);
+			printf("%d addQ 후: ", menu);
+			print_queue();
+		}
+		else if (menu == 0)
+		{
+			printf("%d를 deleteQ한 후: ", deleteQ());
+			print_queue();
+		}
+		else
+			return;
+	}
+}
+
+void addQ(int data)
+{
+	if (front == (rear + 1) % MAX_SIZE)
+	{
+		printf("Queue Full!!\n");
+		return;
+	}
+	rear = (rear + 1) % MAX_SIZE;
+	queue[rear] = data;
+}
+
+int deleteQ()
+{
+	if(front == rear)
+	{
+		printf("Queue Empty!!\n");
+		return -1;
+	}
+	front = (front + 1) % MAX_SIZE;
+	return queue[front];
+}
+
+void print_queue()
+{
+	printf("[ ");
+	for (int i = (front + 1) % MAX_SIZE; i != rear; i = (i + 1) % MAX_SIZE)
+		printf("%d ", queue[i]);
+	printf("], front = %d, rear = %d\n", front, rear);
+}

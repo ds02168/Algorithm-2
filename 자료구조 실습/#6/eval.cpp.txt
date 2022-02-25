@@ -1,0 +1,61 @@
+#include "postfix.h"
+
+precedence get_token(char *, char *, int *);
+
+int eval(char* expr)
+{
+	int n = 0;
+	int mid = 1; //^연산시 제곱을 구하기위해 필요한 변수입니다.
+	int op1, op2;
+	char ch;
+	precedence token;
+
+	stack<int> st;
+
+	for (token = get_token(expr, &ch, &n); token != eos; token = get_token(expr, &ch, &n)) {
+		if (token == operand)
+			st.push(ch - '0');
+		else {
+			op2 = st.pop();
+			op1 = st.pop();
+
+			switch (token) {
+			case nnot:
+				st.push(op1); //단항연산이므로 앞의 operand는 다시 스택에 넣습니다.
+				st.push(op2 = -op2); break; //부호를 바꿔줍니다.
+			case power:
+				for (int i = 1; i <= op2; i++)
+					mid = op1 * mid; // mid=op1^op2
+				st.push(mid);
+				mid = 1;  break; //다음의 ^연산을 위해 mid를 1로 초기화합니다.
+			case plus:st.push(op1 + op2); break;
+			case minus:st.push(op1 - op2); break;
+			case times:st.push(op1 * op2); break;
+			case mod:st.push(op1 % op2); break;
+			case divide:st.push(op1 / op2);
+			}
+		}
+
+		printf("token = %c, token = ", ch);
+		st.print();
+	}
+	return st.pop();
+}
+
+precedence get_token(char *expr, char *symbol, int *n)
+{
+	*symbol = expr[(*n)++];
+	switch (*symbol) {
+	case '(':return lparen;
+	case ')':return rparen;
+	case '!':return nnot;
+	case '^':return power;
+	case '*':return times;
+	case '%':return mod;
+	case '/':return divide;
+	case '+':return plus;
+	case '-':return minus;
+	case '\0':return eos;
+	default: return operand;
+	}
+}

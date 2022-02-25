@@ -1,0 +1,15 @@
+#include <stdio.h>
+#include "stack.h"
+
+int eval(char *);
+void postfix(char *, char *);
+
+void main()
+{
+	char expr[100] = "3*(2+5/2)-4%7";
+	char new_expr[100];
+	printf("Infix = %s\n", expr);
+	postfix(expr, new_expr);
+	printf("postfix = %s\n", new_expr);
+	printf("계산 결과 = %d\n", eval(new_expr));
+}

@@ -1,0 +1,5 @@
+#include "stack.h"
+
+typedef enum {
+	lparen, rparen, nnot, power, plus, minus, times, mod, divide, eos, operand
+}precedence;

@@ -1,0 +1,244 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+struct node {
+	int key;
+	double value;
+	struct node *lchild, *rchild;
+};
+
+void inorder(struct node*);
+void preorder(struct node*);
+void insert(struct node**, int, double);
+struct node* modified_search(struct node*, int);
+struct node* search(struct node*, int);
+int num_node(struct node*);
+int num_leaf_node(struct node*);
+int height(struct node*);
+
+
+void main()
+{
+	clock_t start, stop;
+	double duration;
+	srand(time(0));
+	int key, i;
+	struct node* root = NULL, *ptr;
+
+	
+	key = 5;
+	insert(&root, key, 1.0 / key);
+
+	key = 3;
+	insert(&root, key, 1.0 / key);
+
+	key = 8;
+	insert(&root, key, 1.0 / key);
+
+	key = 1;
+	insert(&root, key, 1.0 / key);
+
+	key = 9;
+	insert(&root, key, 1.0 / key);
+
+	key = 2;
+	insert(&root, key, 1.0 / key);
+
+	key = 7;
+	insert(&root, key, 1.0 / key);
+
+	key = 10;
+	insert(&root, key, 1.0 / key);
+
+	key = 6;
+	insert(&root, key, 1.0 / key);
+
+	key = 4;
+	insert(&root, key, 1.0 / key);
+	
+	printf("inorder = ");
+	inorder(root);
+	printf("\n\n");
+
+	printf("preorder = ");
+	preorder(root);
+	printf("\n\n");
+
+
+	key = 2;
+	ptr = search(root, key);
+	if (ptr != NULL)
+		printf("%d의 value = %f\n", key, ptr->value);
+	else
+		printf("없는 키 입니다.\n");
+
+	key = 4;
+	ptr = search(root, key);
+	if (ptr != NULL)
+		printf("%d의 value = %f\n", key, ptr->value);
+	else
+		printf("없는 키 입니다.\n");
+
+	key = 5;
+	ptr = search(root, key);
+	if (ptr != NULL)
+		printf("%d의 value = %f\n", key, ptr->value);
+	else
+		printf("없는 키 입니다.\n");
+
+	key = 7;
+	ptr = search(root, key);
+	if (ptr != NULL)
+		printf("%d의 value = %f\n", key, ptr->value);
+	else
+		printf("없는 키 입니다.\n");
+
+	key = 8;
+	ptr = search(root, key);
+	if (ptr != NULL)
+		printf("%d의 value = %f\n", key, ptr->value);
+	else
+		printf("없는 키 입니다.\n");
+
+	key = 10;
+	ptr = search(root, key);
+	if (ptr != NULL)
+		printf("%d의 value = %f\n", key, ptr->value);
+	else
+		printf("없는 키 입니다.\n");
+
+	key = 13;
+	ptr = search(root, key);
+	if (ptr != NULL)
+		printf("%d의 value = %f\n", key, ptr->value);
+	else
+		printf("없는 키 입니다.\n");
+
+
+}
+
+struct node* search(struct node* root, int key)
+{
+	struct node* ptr = root;
+	int count = 1;
+
+	while (ptr != NULL)
+	{
+		if (key == ptr->key) {
+			printf("%d회 호출 횟수, ", count);
+			return ptr;
+		}
+		else if (key < ptr->key)
+			ptr = ptr->lchild;
+		else
+			ptr = ptr->rchild;
+		count++;
+	}
+	printf("%d회 호출 횟수, ", count);
+	return NULL;
+}
+
+void insert(struct node** root, int key, double value)
+{
+	struct node* parent = modified_search(*root, key);
+	struct node* new_node;
+
+	if ((*root) == NULL || parent != NULL) {
+		new_node = (struct node*)malloc(sizeof(struct node));
+		new_node->key = key;
+		new_node->value = value;
+		new_node->lchild = new_node->rchild = NULL;
+
+		if ((*root) == NULL) {
+			(*root) = new_node;
+			return;
+		}
+
+		if (key < parent->key)
+			parent->lchild = new_node;
+		else
+			parent->rchild = new_node;
+	}
+}
+
+struct node* modified_search(struct node* root, int key)
+{
+	struct node* ptr = root;
+
+	while (ptr != NULL)
+	{
+		if (key == ptr->key)
+			return NULL;
+		else if (key < ptr->key) {
+			if (ptr->lchild == NULL)
+				return ptr;
+			ptr = ptr->lchild;
+		}
+		else
+		{
+			if (ptr->rchild == NULL)
+				return ptr;
+			ptr = ptr->rchild;
+		}
+	}
+
+	return NULL;
+}
+
+void inorder(struct node* root)
+{
+	if (root != NULL)
+	{
+		inorder(root->lchild);
+		printf("%d(%f) ", root->key, root->value);
+		inorder(root->rchild);
+	}
+}
+
+void preorder(struct node* root)
+{
+	if (root != NULL)
+	{
+		printf("%d(%f) ", root->key, root->value);
+		preorder(root->lchild);
+		preorder(root->rchild);
+	}
+}
+
+
+int num_node(struct node* root)
+{
+	int count = 0;
+	if (root != NULL)
+		count = 1 + num_node(root->lchild) + num_node(root->rchild);
+
+	return count;
+}
+int num_leaf_node(struct node* root)
+{
+	int count = 0;
+	if (root != NULL) {
+		if (!root->lchild && !root->rchild)
+			count = 1;
+		else
+			count = num_leaf_node(root->lchild) + num_leaf_node(root->rchild);
+	}
+	return count;
+}
+int height(struct node* root)
+{
+	int depth = 0;
+	int lheight, rheight;
+
+	if (root != NULL)
+	{
+		lheight = height(root->lchild);
+		rheight = height(root->rchild);
+		if (lheight > rheight)
+			depth = 1 + lheight;
+		else
+			depth = 1 + rheight;
+	}
+	return depth;
+}

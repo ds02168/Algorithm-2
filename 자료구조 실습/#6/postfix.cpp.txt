@@ -1,0 +1,54 @@
+#include "postfix.h"
+
+int isp[] = { 0, 19, 17, 1, 12, 12, 13, 13, 13, 0 }; //!=19, ^=1 <-역순으로 연산이 가능하게 합니다.
+int icp[] = { 20, 19, 17, 15, 12, 12, 13, 13, 13, 0 }; // !=19, ^=17
+//(, ), !, ^, +, -, *, /, %, eos
+
+char get_symbol(precedence);
+precedence get_token(char *, char *, int *);
+
+void postfix(char *expr, char *new_expr)
+{
+	precedence token;
+	stack<precedence> st;
+	char symbol;
+	int n = 0, idx = 0;
+
+	st.push(eos);
+	for (token = get_token(expr, &symbol, &n); token != eos; token = get_token(expr, &symbol, &n))
+	{
+		if (token == operand)
+			new_expr[idx++] = symbol;
+		else if (token == rparen) {
+			while (st.peek() != lparen)
+				new_expr[idx++] = get_symbol(st.pop());
+			st.pop();
+		}
+		else {
+			while (icp[token] <= isp[st.peek()])
+			{
+				new_expr[idx++] = get_symbol(st.pop());
+			}
+			st.push(token);
+		}
+	}
+
+	while (st.peek() != eos)
+		new_expr[idx++] = get_symbol(st.pop());
+
+	new_expr[idx] = get_symbol(st.pop());
+}
+
+char get_symbol(precedence token)
+{
+	switch (token) {
+	case nnot:return '!'; //not연산
+	case power:return '^'; //power연산
+	case times: return '*';
+	case mod: return '%';
+	case divide: return '/';
+	case plus: return '+';
+	case minus: return '-';
+	case eos: return '\0';
+	}
+}

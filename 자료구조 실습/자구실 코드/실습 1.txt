@@ -1,0 +1,107 @@
+// 1
+#include <stdio.h>
+#include <stdlib.h>
+
+struct node {
+	int key;
+	double value;
+	struct node* lchild, * rchild;
+};
+
+void inorder(struct node*);
+void insert(struct node**, int, double);
+struct node* search(struct node*, int);
+struct node* modified_search(struct node*, int);
+
+void main()
+{
+	int key, i;
+	struct node* root = NULL, *ptr;
+
+	for (i = 0; i < 10; i++) {
+		key = rand() % 100 + 1;
+		insert(&root, key, 1.0 / key);
+	}
+
+	printf("inorder = ");
+	inorder(root);
+	printf("\n");
+
+	printf("검색할 키? ");
+	scanf("%d", &key);
+	ptr = search(root, key);
+	if (ptr != NULL)
+		printf("%d의 value = %f\n", key, ptr->value);
+	else
+		printf("없는 키입니다.\n");
+}
+
+struct node* search(struct node* root, int key)
+{
+	struct node* ptr = root;
+
+	while (ptr != NULL) {
+		if (key == ptr->key)
+			return ptr;
+		else if (key < ptr->key)
+			ptr = ptr->lchild;
+		else
+			ptr = ptr->rchild;
+	}
+	return NULL;
+}
+
+void insert(struct node** root, int key, double value)
+{
+	struct node* parent = modified_search(*root, key);
+	struct node* new_node;
+
+	if (*root == NULL || parent != NULL) {
+		new_node = (struct node*)malloc(sizeof(struct node));
+		new_node->key = key;
+		new_node->value = value;
+		new_node->lchild = new_node->rchild = NULL;
+		if (*root == NULL) {
+			*root = new_node;
+			return;
+		}
+
+		if (key < parent->key)
+			parent->lchild = new_node;
+		else
+			parent->rchild = new_node;
+	}
+}
+
+struct node* modified_search(struct node* root, int key)
+{
+	struct node* ptr = root;
+
+	if (root == NULL)
+		return NULL;
+
+	while (ptr != NULL) {
+		if (key == ptr->key)
+			return NULL;
+		if (key < ptr->key) {
+			if (ptr->lchild == NULL)
+				return ptr;
+			ptr = ptr->lchild;
+		}
+		else {		// key > ptr->key
+			if (ptr->rchild == NULL)
+				return ptr;
+			ptr = ptr->rchild;
+		}
+	}
+	return NULL;
+}
+
+void inorder(struct node* root)
+{
+	if (root != NULL) {
+		inorder(root->lchild);
+		printf("%d(%f) ", root->key, root->value);
+		inorder(root->rchild);
+	}
+}

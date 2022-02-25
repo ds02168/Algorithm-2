@@ -1,0 +1,121 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define NO_EDGE 10000
+#define FALSE 0
+#define TRUE 1
+
+int n;
+int** G;
+
+void make_graph();
+void shortestPath(int, int[], short[]);
+int choose(int[], short[]);
+void allCosts(int**);
+
+void main()
+{
+	int* distance;
+	int** D, i, j;
+	short *found;
+
+	make_graph();
+/*
+	distance = (int*)malloc(sizeof(int) * n);
+	found = (short*)malloc(sizeof(short) * n);
+	shortestPath(4, distance, found);
+
+	printf("Shortest path from %d: ", 4);
+	for (int i = 0; i < n; i++)
+		printf("%d(%d) ", i, distance[i]);
+	printf("\n");
+*/
+	D = (int**)malloc(sizeof(int*) * n);
+	for (i = 0; i < n; i++) 
+		D[i] = (int*)malloc(sizeof(int) * n);
+	allCosts(D);
+	for (i = 0; i < n; i++) {
+		for (j = 0; j < n; j++)
+			printf("%6d ", D[i][j]);
+		printf("\n");
+	}
+}
+
+void make_graph()
+{
+	int from, to, weight;
+	FILE* fp;
+	char fname[40];
+
+	printf("파일 이름? ");
+	gets_s(fname);
+	fp = fopen(fname, "r");
+	fscanf(fp, "%d", &n);
+
+	G = (int**)malloc(sizeof(int*) * n);
+	for (int i = 0; i < n; i++) {
+		G[i] = (int*)malloc(sizeof(int) * n);
+		for (int j = 0; j < n; j++) {
+			if (i == j)
+				G[i][j] = 0;
+			else
+				G[i][j] = NO_EDGE;
+		}
+	}
+
+	while (1) {
+		fscanf(fp, "%d%d%d", &from, &to, &weight);
+		if (from == -1 && to == -1)
+			break;
+		G[from][to] = weight;
+	}
+	fclose(fp);
+}
+
+void shortestPath(int v, int distance[], short found[])
+{
+	int i, u, w;
+	for (i = 0; i < n; i++) {
+		found[i] = FALSE;  distance[i] = G[v][i];
+	}
+
+	found[v] = TRUE;
+	distance[v] = 0;
+	for (i = 0; i < n - 2; i++) {
+		u = choose(distance, found); 
+		found[u] = TRUE;
+		for (w = 0; w < n; w++)
+			if (found[w] == FALSE)	// 관찰 3을 구현
+				if (distance[u] + G[u][w] < distance[w])
+					distance[w] = distance[u] + G[u][w];
+	}
+}
+
+int choose(int distance[], short found[])
+{
+	int i, min, minpos;
+
+	min = INT_MAX;
+	minpos = -1;
+	for (i = 0; i < n; i++)
+		if (distance[i] < min && found[i] == FALSE) {
+			min = distance[i];
+			minpos = i;
+		}
+	return minpos;
+}
+
+void allCosts(int** D)
+{
+	int i, j, k;
+
+	for (i = 0; i < n; i++)
+		for (j = 0; j < n; j++)
+			D[i][j] = G[i][j];
+
+	for (k = 0; k < n; k++)
+		for (i = 0; i < n; i++)
+			for (j = 0; j < n; j++)
+				if (D[i][k] + D[k][j] < D[i][j])
+					D[i][j] = D[i][k] + D[k][j];
+}

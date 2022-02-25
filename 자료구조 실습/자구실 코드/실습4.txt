@@ -1,0 +1,239 @@
+// stack
+#include <stdio.h>
+#define MAX_SIZE 10
+
+int stack[MAX_SIZE], top = -1;
+
+void push(int);
+int pop();
+void print_stack();
+
+void main()
+{
+	int menu;
+
+	while (1) {
+		printf("push(>0), pop(0), exit(-1): ");
+		scanf("%d", &menu);
+		if (menu > 0) {
+			push(menu);
+			printf("%d push 후: ", menu);
+			print_stack();
+		}
+
+		else if (menu == 0) {
+			printf("%d를 pop한 후: ", pop());
+			print_stack();
+		}
+		else
+			return;
+	}
+}
+
+void push(int data)
+{
+	if (top == MAX_SIZE - 1) {
+		printf("Stack FULL!!\n");
+		return;
+	}
+	stack[++top] = data;
+}
+
+int pop()
+{
+	if (top < 0) {
+		printf("Stack EMPTY!!\n");
+		return -1;
+	}
+	return stack[top--];
+}
+
+void print_stack()
+{
+	printf("stack = [ ");
+	for (int i = 0; i <= top; i++)
+		printf("%d ", stack[i]);
+	printf("], top = %d\n", top);
+}
+
+// queue
+#include <stdio.h>
+#define MAX_SIZE 10
+
+int queue[MAX_SIZE], front = -1, rear = -1;
+
+void addq(int);
+int deleteq();
+void print_queue();
+
+void main()
+{
+	int menu;
+
+	while (1) {
+		printf("addq(>0), deleteq(0), exit(-1): ");
+		scanf("%d", &menu);
+		if (menu > 0) {
+			addq(menu);
+			printf("%d를 add한 후: ", menu);
+			print_queue();
+		}
+
+		else if (menu == 0) {
+			printf("%d를 delete한 후: ", deleteq());
+			print_queue();
+		}
+		else
+			return;
+	}
+}
+
+void addq(int data)
+{
+	if (rear == MAX_SIZE - 1) {
+		printf("Queue FULL!!\n");
+		return;
+	}
+	queue[++rear] = data;
+}
+
+int deleteq()
+{
+	if (front == rear) {
+		printf("Queue EMPTY!!\n");
+		return -1;
+	}
+	return queue[++front];
+}
+
+void print_queue()
+{
+	printf("queue = [ ");
+	for (int i = front+1; i <= rear; i++)
+		printf("%d ", queue[i]);
+	printf("], front = %d, rear = %d\n", front, rear);
+}
+
+// circular queue
+#include <stdio.h>
+#define MAX_SIZE 10
+
+int queue[MAX_SIZE], front = 0, rear = 0;
+
+void addq(int);
+int deleteq();
+void print_queue();
+
+void main()
+{
+	int menu;
+
+	while (1) {
+		printf("addq(>0), deleteq(0), exit(-1): ");
+		scanf("%d", &menu);
+		if (menu > 0) {
+			addq(menu);
+			printf("%d를 add한 후: ", menu);
+			print_queue();
+		}
+
+		else if (menu == 0) {
+			printf("%d를 delete한 후: ", deleteq());
+			print_queue();
+		}
+		else
+			return;
+	}
+}
+
+void addq(int data)
+{
+	if (front == (rear + 1) % MAX_SIZE) {
+		printf("Queue FULL!!\n");
+		return;
+	}
+	rear = (rear + 1) % MAX_SIZE;
+	queue[rear] = data;
+}
+
+int deleteq()
+{
+	if (front == rear) {
+		printf("Queue EMPTY!!\n");
+		return -1;
+	}
+	front = (front + 1) % MAX_SIZE;
+	return queue[front];
+}
+
+void print_queue()
+{
+	printf("circular queue = [ ");
+	if (front != rear) {
+		for (int i = (front + 1) % MAX_SIZE; i != rear; i = (i+1) % MAX_SIZE)
+			printf("%d ", queue[i]);
+		printf("%d ", queue[rear]);
+	}
+	printf("], front = %d, rear = %d\n", front, rear);
+}
+
+// stack: memory 동적 할당
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_SIZE 10
+
+int *stack, top = -1, size = MAX_SIZE;
+
+void push(int);
+int pop();
+void print_stack();
+
+void main()
+{
+	int menu;
+
+	stack = (int*)malloc(sizeof(int) * size);
+	while (1) {
+		printf("push(>0), pop(0), exit(-1): ");
+		scanf("%d", &menu);
+		if (menu > 0) {
+			push(menu);
+			printf("%d push 후: ", menu);
+			print_stack();
+		}
+
+		else if (menu == 0) {
+			printf("%d를 pop한 후: ", pop());
+			print_stack();
+		}
+		else
+			return;
+	}
+}
+
+void push(int data)
+{
+	if (top == size - 1) {
+		size = size * 2;
+		stack = (int*)realloc(stack, sizeof(int) * size);
+	}
+	stack[++top] = data;
+}
+
+int pop()
+{
+	if (top < 0) {
+		printf("Stack EMPTY!!\n");
+		return -1;
+	}
+	return stack[top--];
+}
+
+void print_stack()
+{
+	printf("stack = [ ");
+	for (int i = 0; i <= top; i++)
+		printf("%d ", stack[i]);
+	printf("], top = %d\n", top);
+}

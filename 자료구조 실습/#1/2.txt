@@ -1,0 +1,44 @@
+#include <stdio.h>
+
+#define SIZE 1000000
+
+int binsearch(int[], int, int);
+int A[SIZE];
+
+void main(void)
+{
+	int i,j;
+	int list[] = { 100,1000,10000,20000,30000,40000,50000,
+	60000,70000,80000,90000,100000,200000,300000,400000,
+	500000,600000,700000,800000,900000,1000000 };
+
+	for (i = 1; i <= SIZE; i++)
+		A[i] = 2 * i;
+
+	for (i = 0; i < 21; i++)
+		printf("%d크기의 배열에서 홀수 1을 찾기 위해 실행된 반복문의 수 = %d\n", list[i] ,binsearch(A, list[i], 1));
+
+}
+
+int binsearch(int A[], int n, int key)
+{
+	int left, right, middle;
+	int counter = 0;
+
+	left = 0;
+	right = n - 1;
+	while (left <= right)
+	{
+		middle = (left + right) / 2;
+		counter++;
+
+		if (A[middle] == key)
+			return counter;
+		else if (A[middle] < key)
+			left = middle + 1;
+		else
+			right = middle - 1;
+	}
+
+	return counter;
+}

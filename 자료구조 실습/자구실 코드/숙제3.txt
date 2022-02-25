@@ -1,0 +1,180 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define INIT_SIZE 10
+#define compare(x, y) (((x)<(y)) ? -1 : ((x)==(y)) ? 0 : 1)
+struct poly {
+ int coef;
+ int exp;
+};
+
+struct poly* input_poly();
+void print_poly(struct poly*);
+void print_item(struct poly*);
+struct poly* padd(struct poly*, struct poly*);
+struct poly* single_multi(struct poly*, struct poly);
+struct poly* pmulti(struct poly*, struct poly*);
+
+void main()
+{
+ struct poly* A, *B, *C, *D, *E;
+
+ A = input_poly();
+ B = input_poly();
+
+ printf("\n다항식 A: ");
+ print_poly(A);
+ printf("\n다항식 B: ");
+ print_poly(B);
+ C = padd(A, B);
+ printf("\nA + B = ");
+ print_poly(C);
+
+ for (int i = 0; A[i].exp != -1; i++) {
+  D = single_multi(B, A[i]);
+  printf("\n%d번째 곱 = ", i);
+  print_poly(D);
+ }
+
+ printf("다항식의 곱 : ");
+ E = pmulti(A, B);
+ print_poly(E);
+}
+
+struct poly* input_poly()
+{
+ int size = INIT_SIZE, i;
+ struct poly* p;
+
+ p = (struct poly*)malloc(sizeof(struct poly) * size);
+ printf("다항식{(계수 지수)의 쌍} 입력: (마지막 항은 -1 -1)\n");
+ for (i = 0; ; i++) {
+  scanf_s("%d%d", &p[i].coef, &p[i].exp);
+  if (p[i].coef == -1 && p[i].exp == -1)
+   break;
+  if (i == size - 1) {
+   size = size * 2;
+   p = (struct poly*)realloc(p, sizeof(struct poly) * size);
+  }
+ }
+ return p;
+}
+
+void print_poly(struct poly* p)
+{
+ for (int i = 0; p[i].exp != -1; i++) {
+  if (i == 0) {
+   if (p[i].coef < 0)
+    printf("-");
+  }
+  else {
+   if (p[i].coef <0)
+    printf("- ");
+   else
+    printf("+ ");
+  }
+  print_item(&p[i]);
+ }
+ printf("\n");
+}
+
+void print_item(struct poly* pi)
+{
+ int coef = abs(pi->coef);
+
+ if (coef != 1 || pi->exp == 0)
+  printf("%d", coef);
+ if (pi->exp >= 2)
+  printf("X^%d", pi->exp);
+ else if (pi->exp == 1)
+  printf("X");
+
+ printf(" ");
+}
+
+struct poly* padd(struct poly* A, struct poly* B)
+{
+ int ia, ib, ic, size = INIT_SIZE, coef;
+ struct poly* C;
+
+ C = (struct poly*)malloc(sizeof(struct poly) * size);
+ ia = ib = ic = 0;
+ while (A[ia].exp != -1 && B[ib].exp != -1) {
+  switch (compare(A[ia].exp, B[ib].exp)) {
+  case -1:
+   C[ic++] = B[ib++];
+   break;
+  case 0:
+   coef = A[ia].coef + B[ib].coef;
+   if (coef != 0) {
+    C[ic].coef = coef;
+    C[ic].exp = A[ia].exp;
+    ic++;
+   }
+   ia++, ib++;
+   break;
+  case 1:
+   C[ic++] = A[ia++];
+   break;
+  }
+  if (ic == size) {
+   size = size * 2;
+   C = (struct poly*)realloc(C, sizeof(struct poly) * size);
+  }
+ }
+
+ while (A[ia].exp != -1) {
+  C[ic++] = A[ia++];
+  if (ic == size) {
+   size = size * 2;
+   C = (struct poly*)realloc(C, sizeof(struct poly) * size);
+  }
+ }
+ while (B[ib].exp != -1) {
+  C[ic++] = B[ib++];
+  if (ic == size) {
+   size = size * 2;
+   C = (struct poly*)realloc(C, sizeof(struct poly) * size);
+  }
+ }
+
+ C[ic].exp = -1, C[ic].coef = -1;
+ return C;
+}
+
+struct poly* single_multi(struct poly* B, struct poly item)
+{
+ struct poly* p;
+ int i, size;
+
+ for (i = 0; B[i].exp != -1; i++);
+ size = i + 1;
+
+ p = (struct poly*)malloc(sizeof(struct poly) * size);
+ for (i = 0; i < size - 1; i++) {
+  p[i].coef = B[i].coef * item.coef;
+  p[i].exp = B[i].exp + item.exp;
+ }
+ p[size - 1].exp = -1;
+ p[size - 1].coef = -1;
+ return p;
+}
+struct poly* pmulti(struct poly* a, struct poly* b)
+{
+ struct poly* c=NULL, *d;
+ struct poly* imsi;
+ for (int i = 0; a[i].exp != -1; i++)
+ {
+  imsi = single_multi(b, a[i]);
+
+  if (i == 0)
+   c = imsi;
+  else {
+   d = padd(imsi, c);
+   free(c);
+   c = d;
+  }
+  free(imsi);
+ }
+ return c;
+}

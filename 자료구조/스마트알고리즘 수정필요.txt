@@ -1,0 +1,243 @@
+#pragma warning(disable:4996)
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <math.h>
+
+#define MAX_SIZE 100000
+#define ATURN 0
+#define BTURN 1
+
+struct Point {
+	int x;
+	int y;
+};
+
+struct Point* As, * Bs;
+
+int SetData(struct Point*, struct Point*);
+int SimpleAlgorithm(struct Point*, struct Point*, int);
+void Print_Algo(int, double);
+int SmartAlgoritm(struct Point*, struct Point*, int, int);
+void QuickSort(struct Point*, int, int);
+
+
+void main(void)
+{
+	int min;
+	int size;
+
+	clock_t start, stop;
+	double duration;
+
+	struct Point* A = (struct Point*)malloc(sizeof(struct Point) * MAX_SIZE);
+	struct Point* B = (struct Point*)malloc(sizeof(struct Point) * MAX_SIZE);
+
+	size = SetData(A, B);
+
+	start = clock();
+	min = SimpleAlgorithm(A, B, size);
+	stop = clock();
+
+	duration = ((double)(stop - start)) / CLOCKS_PER_SEC;
+	Print_Algo(min, duration);
+
+
+	start = clock();
+	QuickSort(A, 0, (size - 1));
+	QuickSort(B, 0, (size - 1));
+	min = SmartAlgoritm(A, B, size, 0);
+	stop = clock();
+
+	for (int i = 0; i < size; i++)
+		printf("A[%d] %d %d\n", i, A[i].x, A[i].y);
+	//for (int i = 0; i < size; i++)
+	//	printf("B[%d] %d %d\n", i, B[i].x, B[i].y);
+
+	duration = ((double)(stop - start)) / CLOCKS_PER_SEC;
+	Print_Algo(min, duration);
+
+	free(A);
+	free(B);
+}
+
+int SetData(struct Point* A, struct Point* B)
+{
+	char buffer[255];
+	int buf1, buf2;
+
+	int flag = ATURN;
+	int i = 0, Axmax = 0;
+	int size;
+
+
+	printf("파일 이름 ? ");
+	scanf("%s", buffer);
+
+	FILE* fp = fopen(buffer, "r"); //입력 스트림 열기
+
+	fscanf(fp, "%d", &size); //데이터 크기 스캔
+
+	while (!feof(fp))
+	{
+		if (i < size)
+		{
+			fscanf(fp, "%d %d ", &buf1, &buf2);
+
+			if (flag == ATURN) { //A좌표 저장
+				A[i].x = buf1;
+				A[i].y = buf2;
+
+				if (A[i].x > Axmax)
+					Axmax = A[i].x;
+			}
+			else if (flag == BTURN) { //B좌표 저장
+				if (buf1 > Axmax) //A좌표 보다 오른쪽만
+				{
+					B[i].x = buf1;
+					B[i].y = buf2;
+				}
+			}
+			i++;
+
+		}
+		else if (i == size)
+		{
+			fscanf(fp, "%d", &size); //사이즈 저장
+
+			if (flag == ATURN) //A차례면
+				flag = BTURN; //B로 바꿈
+			else {
+				flag = ATURN;
+
+			}
+
+			i = 0;
+		}
+	}
+
+	fclose(fp); //입력 파일 스트림 닫기
+
+	return size;
+}
+
+int SimpleAlgorithm(struct Point* A, struct Point* B, int size)
+{
+	int i, j;
+	int xleng, yleng, xyleng, min;
+
+	xleng = abs(B[0].x - A[0].x);
+	yleng = abs(B[0].y - A[0].y);
+	xyleng = xleng + yleng;
+	min = xyleng;
+
+	for (i = 0; i < size; i++)
+		for (j = 0; j < size; j++)
+		{
+			xleng = abs(B[j].x - A[i].x);
+			yleng = abs(B[j].y - A[i].y);
+			xyleng = xleng + yleng;
+			if (xyleng < min)
+			{
+				min = xyleng;
+				As = &A[i];
+				Bs = &B[j];
+			}
+		}
+
+	return min;
+}
+
+int SmartAlgoritm(struct Point* A, struct Point* B, int size, int index)
+{
+	int j, flag = 0;
+	int xleng, yleng, xyleng, min;
+	int cx, cy;
+
+	cx = (A[size - 1].x + B[index].x) / 2;
+	cy = (A[size - 1].y + B[index].y) / 2;
+
+	xleng = abs(B[index].x - A[size - 1].x);
+	yleng = abs(B[index].y - A[size - 1].y);
+	min = xleng + yleng;
+
+
+	for (j = 0; j <= index; j++)
+	{
+		if ((B[j].y >= (cy - B[index].y)) || (B[j].y) <= (cy + B[index].y))
+		{
+			xyleng = abs(B[j].x - A[size - 1].x) + abs(B[index].y - A[size - 1].y);
+			if (min > xyleng) 
+			{
+				min = xyleng;
+				flag = 1;
+				As = &A[size-1];
+				Bs = &B[j];
+			}
+		}
+	}
+
+	if (flag || index==(size-1))
+		return min;
+
+	index++;
+	min = SmartAlgoritm(A, B, size, index);
+
+	return min;
+}
+
+void Print_Algo(int min, double duration)
+{
+	printf("단순한 방법: ");
+	printf("최단 거리 = %d, ", min);
+	printf("i = (%d, %d), p = (%d, %d)\n", As->x, As->y, Bs->x, Bs->y);
+	printf("실행 시간: %.2f 초\n", duration);
+}
+
+void QuickSort(struct Point* p, int start, int end)
+{
+	if (start >= end) {
+		// 원소가 1개인 경우
+		return;
+	}
+
+	int pivot = start;
+	int i = pivot + 1; // 왼쪽 출발 지점 
+	int j = end; // 오른쪽 출발 지점
+	int temp;
+
+	while (i <= j) {
+		// 포인터가 엇갈릴때까지 반복
+		while (i <= end && p[i].x <= p[pivot].x) {
+			i++;
+		}
+		while (j > start && p[j].x >= p[pivot].x) {
+			j--;
+		}
+
+		if (i > j) {
+			// 엇갈림
+			temp = p[j].x;
+			p[j].x = p[pivot].x;
+			p[pivot].x = temp;
+
+			temp = p[j].y;
+			p[j].y = p[pivot].y;
+			p[pivot].y = temp;
+		}
+		else {
+			// i번째와 j번째를 스왑
+			temp = p[i].x;
+			p[i].x = p[j].x;
+			p[j].x = temp;
+
+			temp = p[i].y;
+			p[i].y = p[j].y;
+			p[j].y = temp;
+		}
+	}
+
+	// 분할 계산
+	QuickSort(p, start, j - 1);
+	QuickSort(p, j + 1, end);
+}

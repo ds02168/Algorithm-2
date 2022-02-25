@@ -1,0 +1,242 @@
+// poly.h
+#include <stdio.h>
+
+struct node {
+	int coef;
+	int exp;
+	struct node* next;
+};
+typedef struct node POLY;
+
+POLY* getNode();
+void cerase(POLY*);
+POLY* create_polynomial();
+POLY* cpadd(POLY*, POLY*);
+POLY* cpsubtract(POLY*, POLY*);
+void attach(int, int, POLY**);
+void print_polynomial(const char *, POLY*);
+
+// list.cpp
+#include "poly.h"
+#include <stdlib.h>
+
+POLY* avail;
+
+POLY* getNode()
+{
+	POLY* new_node;
+
+	if (avail) {
+		new_node = avail;
+		avail = avail->next;
+	}
+	else
+		new_node = (POLY*)malloc(sizeof(POLY));
+
+	return new_node;
+}
+
+void cerase(POLY** start)
+{
+	POLY* ptr;
+
+	if (*start == NULL)
+		return;
+
+	ptr = *start;
+	*start = (*start)->next;
+	ptr->next = avail;
+	avail = *start;
+	*start = NULL;
+}
+
+// poly.cpp
+#include "poly.h"
+#include <math.h>
+
+#define compare(x, y)	((x) < (y) ? -1 : (x) > (y) ? 1 : 0)
+
+POLY* create_polynomial()
+{
+	int coef, exp;
+	POLY* front, * rear;
+
+	front = rear = getNode();
+	front->exp = -1;
+
+	printf("(계수, 지수)의 쌍을 입력. 마지막은 (-1 -1) 입력:\n");
+	while (1) {
+		scanf("%d%d", &coef, &exp);
+		if (exp == -1)
+			break;
+		attach(coef, exp, &rear);
+	}
+	rear->next = front;
+	return front;
+}
+
+POLY* cpadd(POLY* A, POLY* B)
+{
+	bool done = false;
+	POLY* front, * rear;
+
+	front = rear = getNode();
+	front->exp = -1;
+
+	A = A->next;
+	B = B->next;
+	while (done != true) {
+		switch (compare(A->exp, B->exp)) {
+		case -1:	// A->exp < B->exp
+			attach(B->coef, B->exp, &rear);
+			B = B->next;
+			break;
+		case 1:		// A->exp > B->exp
+			attach(A->coef, A->exp, &rear);
+			A = A->next;
+			break;
+		case 0:
+			if (A->exp == -1) {
+				done = true;
+				break;
+			}
+			else {
+				if (A->coef + B->coef != 0)
+					attach(A->coef + B->coef, B->exp, &rear);
+				A = A->next;
+				B = B->next;
+			}
+		}
+	}
+	rear->next = front;
+	return front;
+}
+
+POLY* cpsubtract(POLY* A, POLY* B)
+{
+	bool done = false;
+	POLY* front, * rear;
+
+	front = rear = getNode();
+	front->exp = -1;
+
+	A = A->next;
+	B = B->next;
+	while (done != true) {
+		switch (compare(A->exp, B->exp)) {
+		case -1:	// A->exp < B->exp
+			attach(-B->coef, B->exp, &rear);
+			B = B->next;
+			break;
+		case 1:		// A->exp > B->exp
+			attach(A->coef, A->exp, &rear);
+			A = A->next;
+			break;
+		case 0:
+			if (A->exp == -1) {
+				done = true;
+				break;
+			}
+			else {
+				if (A->coef - B->coef != 0)
+					attach(A->coef - B->coef, B->exp, &rear);
+				A = A->next;
+				B = B->next;
+			}
+		}
+	}
+	rear->next = front;
+	return front;
+}
+
+void attach(int coef, int exp, POLY** rear)
+{
+	POLY *node = getNode();
+
+	node->coef = coef;
+	node->exp = exp;
+	(*rear)->next = node;
+	*rear = node;
+}
+
+/*
+POLY* cpmult(POLY* A, POLY* B)
+{
+
+}
+*/
+
+void print_polynomial(const char *msg, POLY* start)
+{
+	POLY* ptr;
+
+	printf("%s", msg);
+	for (ptr = start->next; ptr != start; ptr = ptr->next) {
+		if (ptr == start->next) {
+			if (ptr->coef == -1) {
+				if (ptr->exp == 0)
+					printf("-1 ");
+				else if (ptr->exp == 1)
+					printf("-X ");
+				else
+					printf("-X^%d ", ptr->exp);
+			}
+			else if (ptr->coef == 1) {
+				if (ptr->exp == 0)
+					printf("1 ");
+				else if (ptr->exp == 1)
+					printf("X ");
+				else
+					printf("X^%d ", ptr->exp);
+			}
+			else {
+				if (ptr->exp == 0)
+					printf("%d ", ptr->coef);
+				else if (ptr->exp == 1)
+					printf("%dX ", ptr->coef);
+				else
+					printf("%dX^%d ", ptr->coef, ptr->exp);
+			}
+		}
+		else {
+			if (ptr->coef < 0)
+				printf("- ");
+			else
+				printf("+ ");
+			if (ptr->coef == -1 || ptr->coef == 1) {
+				if (ptr->exp == 0)
+					printf("1 ");
+				else if (ptr->exp == 1)
+					printf("X ");
+				else
+					printf("X^%d ", ptr->exp);
+			}
+			else {
+				if (ptr->exp == 0)
+					printf("%d ", abs(ptr->coef));
+				else if (ptr->exp == 1)
+					printf("%dX ", abs(ptr->coef));
+				else
+					printf("%dX^%d ", abs(ptr->coef), ptr->exp);
+			}
+		}
+	}
+	printf("\n");
+}
+
+// main.cpp
+#include "poly.h"
+
+void main()
+{
+	POLY* A, * B, * C, * D;
+
+	A = create_polynomial();
+	B = create_polynomial();
+
+	C = cpadd(A, B);
+
+	print_polynomial("\nA = ", A);
+	print_polynomial("B = ", B);
+	print_polynomial("A + B = ", C);
+}
